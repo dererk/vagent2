@@ -10,14 +10,19 @@ LOCAL_CONFIGURE_FLAGS = --localstatedir=/var/lib
 override_dh_auto_configure:
 	dh_auto_configure -- $(LOCAL_CONFIGURE_FLAGS)
 
+override_dh_auto_test:
+	$(MAKE) check || ( tail -n +1 tests/*.log ; false )
+
 override_dh_installchangelogs:
 	dh_installchangelogs NEWS.rst
 
 override_dh_install:
 	dh_install --fail-missing
 
-override_dh_auto_test:
-	$(MAKE) check || ( tail -n +1 tests/*.log ; false )
+override_dh_clean:
+	rm include/vcs_version.h 
+	rm varnish-agent.1 
+	dh_clean
 
 override_dh_gencontrol:
 	if [ -n "$$DEBIAN_OVERRIDE_BINARY_VERSION" ]; then \
@@ -25,7 +30,6 @@ override_dh_gencontrol:
 	else \
 		dh_gencontrol ; \
 	fi
-
 
 override_dh_link:
 	# Remove embedded code from other software pieces
@@ -41,7 +45,8 @@ override_dh_link:
 	dh_link
 
 override_dh_pysupport:
-
+	# disabled
+	
 
 %:
-	dh $@
+	dh $@ --with autoreconf

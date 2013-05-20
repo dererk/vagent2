@@ -3,6 +3,7 @@ Upstream-Contact: Kristian Lyngstol <kristian@bohemians.org>
 Source: https://github.com/varnish/vagent2
 
 Files: html/jquery.js
+Copyright: 2013 jQuery Fundation 
 License: MIT
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
@@ -25,13 +26,13 @@ License: MIT
   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
   OTHER DEALINGS IN THE SOFTWARE.
 
-Files: html/bootstrap/js/bootstrap.js, 
- html/bootstrap/js/bootstrap.min.js,
- html/bootstrap/css/bootstrap.min.css, 
- html/bootstrap/css/bootstrap-responsive.css,
- html/bootstrap/css/bootstrap.css,
- html/bootstrap/css/bootstrap-responsive.min.css,
- html/bootstrap/img/glyphicons-halflings-white.png,
+Files: html/bootstrap/js/bootstrap.js  
+ html/bootstrap/js/bootstrap.min.js 
+ html/bootstrap/css/bootstrap.min.css  
+ html/bootstrap/css/bootstrap-responsive.css 
+ html/bootstrap/css/bootstrap.css 
+ html/bootstrap/css/bootstrap-responsive.min.css 
+ html/bootstrap/img/glyphicons-halflings-white.png 
  html/bootstrap/img/glyphicons-halflings.png
 Copyright: 2012 Twitter, Inc.
 License: Apache-2.0

@@ -1,21 +1,44 @@
 Source: varnish-agent
 Section: web
 Priority: optional
-Maintainer: Kristian Lyngstol <kristian@bohemians.org>
-Build-Depends: debhelper (>= 7),
-               netcat-openbsd,
-	       libvarnishapi-dev (>= 3.0),
-	       pkg-config,
-	       libmicrohttpd-dev,
-	       python-docutils,
-	       varnish (>= 3.0.2),
-	       libcurl4-gnutls-dev | libcurl-dev,
-	       libwww-perl,
-	       python-demjson
-Standards-Version: 3.8.1
+Maintainer: Varnish Package Maintainers <pkg-varnish-devel@lists.alioth.debian.org>
+Uploaders: Ulises Vitulli <dererk@debian.org> 
+Build-Depends: debhelper (>= 7.0.50~), dpkg-dev (>= 1.16.1~),
+    libvarnishapi-dev (>= 3.0),
+    libmicrohttpd-dev,
+    libcurl4-gnutls-dev | libcurl-dev,
+    libwww-perl,
+    pkg-config,
+    python-demjson,
+    python-docutils,
+    netcat-openbsd,
+    varnish (>= 3.0.2)
+Standards-Version: 3.9.4
+Homepage: https://github.com/varnish/vagen
 
 Package: varnish-agent
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, varnish (>= 3.0.2)
-Description: Varnish Agent
-
+Depends: ${shlibs:Depends}, ${misc:Depends}, libjs-twitter-bootstrap, 
+    varnish (>= 3.0.2)
+Description: Management agent for the Varnish Cache server
+ A REST interface to the Varnish CLI and shmlog, that adds some basic remote
+ access functionalities for the Varnish Cache software. 
+ . 
+ Between others, Varnish Agent offers:
+ .
+ Simple/Zero Configuration, except you might eventually enable authentication.
+ Upload/Download VCL, uploaded VCL is stored to disk.
+ Deploy new VCL, able to be persisted after reboot.
+ Start/Stop Varnish Cache daemon, show/delete panics, show status, etc.
+ Live Show/Change daemon parameters.
+ Varnishstat support, retrieve varnishstat data in JSON format.
+ Varnishlog support, retrieve varnishlog data in JSON format.
+ .
+ Even though Varnish Agent is a second generation software, its still under
+ heavy development. Use with caution.
+ .
+ SECURITY NOTICE: Although HTTP authbasic support has been recently added, 
+ this will *not* provide any protection against eavesdropping or unauthorized
+ parties listening connections.
+ You *must* have another layer of security than just authbasic when deploying
+ on Untrusted networks, like VPN/SSH tunnels, SSL termination proxy, etc.

@@ -1,10 +1,17 @@
 #!/usr/bin/make -f
 export DH_VERBOSE=1
+
+DPKG_EXPORT_BUILDFLAGS = 1
+include /usr/share/dpkg/buildflags.mk
+
 # Set local state dir for FHS
 LOCAL_CONFIGURE_FLAGS = --localstatedir=/var/lib
 
 override_dh_auto_configure:
 	dh_auto_configure -- $(LOCAL_CONFIGURE_FLAGS)
+
+override_dh_installchangelogs:
+	dh_installchangelogs NEWS.rst
 
 override_dh_install:
 	dh_install --fail-missing
@@ -18,6 +25,23 @@ override_dh_gencontrol:
 	else \
 		dh_gencontrol ; \
 	fi
+
+
+override_dh_link:
+	# Remove embedded code from other software pieces
+	# Bootstrap, provided by libjs-twitter-bootstrap on runtime-dep
+	rm debian/varnish-agent/usr/share/varnish-agent/html/bootstrap/js/bootstrap.js
+	rm debian/varnish-agent/usr/share/varnish-agent/html/bootstrap/js/bootstrap.min.js
+	rm debian/varnish-agent/usr/share/varnish-agent/html/bootstrap/css/bootstrap.min.css
+	rm debian/varnish-agent/usr/share/varnish-agent/html/bootstrap/css/bootstrap-responsive.css
+	rm debian/varnish-agent/usr/share/varnish-agent/html/bootstrap/css/bootstrap.css
+	rm debian/varnish-agent/usr/share/varnish-agent/html/bootstrap/css/bootstrap-responsive.min.css
+	rm debian/varnish-agent/usr/share/varnish-agent/html/bootstrap/img/glyphicons-halflings-white.png
+	rm debian/varnish-agent/usr/share/varnish-agent/html/bootstrap/img/glyphicons-halflings.png
+	dh_link
+
+override_dh_pysupport:
+
 
 %:
 	dh $@

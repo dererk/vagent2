@@ -1,2 +1,1 @@
 src/varnish-agent usr/bin
-html/ usr/share/varnish-agent/html

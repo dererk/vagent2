@@ -1,5 +1,5 @@
 #!/usr/bin/make -f
-export DH_VERBOSE=1
+#export DH_VERBOSE=1
 
 DPKG_EXPORT_BUILDFLAGS = 1
 include /usr/share/dpkg/buildflags.mk
@@ -11,7 +11,7 @@ override_dh_auto_configure:
 	dh_auto_configure -- $(LOCAL_CONFIGURE_FLAGS)
 
 override_dh_auto_test:
-	#$(MAKE) check || ( tail -n +1 tests/*.log ; false )
+	$(MAKE) check || ( tail -n +1 tests/*.log ; false )
 
 override_dh_installchangelogs:
 	dh_installchangelogs NEWS.rst

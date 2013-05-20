@@ -3,7 +3,7 @@ Section: web
 Priority: optional
 Maintainer: Varnish Package Maintainers <pkg-varnish-devel@lists.alioth.debian.org>
 Uploaders: Ulises Vitulli <dererk@debian.org> 
-Build-Depends: debhelper (>= 7.0.50~), dpkg-dev (>= 1.16.1~),
+Build-Depends: debhelper (>= 7.0.50~), dpkg-dev (>= 1.16.1~), dh-autoreconf,
     libvarnishapi-dev (>= 3.0),
     libmicrohttpd-dev,
     libcurl4-gnutls-dev | libcurl-dev,

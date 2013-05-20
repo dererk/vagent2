@@ -1,0 +1,4 @@
+# Frontend depends on jQuery 1.8.1, while we run 1.7.2 at Sid. 
+# This embedded copy will be removed as soon as a working version is to be packaged 
+#
+varnish-agent: embedded-javascript-library usr/share/varnish-agent/html/jquery.js

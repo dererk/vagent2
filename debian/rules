@@ -20,7 +20,7 @@ override_dh_install:
 	dh_install --fail-missing
 
 override_dh_clean:
-	rm -f include/vcs_version.h varnish-agent.1 
+	rm -f varnish-agent.1 
 	dh_clean
 
 override_dh_link:

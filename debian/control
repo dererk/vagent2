@@ -19,7 +19,7 @@ Homepage: https://github.com/varnish/vagen
 Package: varnish-agent
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, libjs-twitter-bootstrap, 
-    varnish (>= 3.0.2)
+    libjs-jquery, varnish (>= 3.0.2)
 Description: Management agent for the Varnish Cache server
  A REST interface to the Varnish CLI and shmlog, that adds some basic remote
  access functionalities for the Varnish Cache software. 

@@ -6,3 +6,4 @@
 /usr/share/twitter-bootstrap/files/css/bootstrap-responsive.min.css usr/share/varnish-agent/html/bootstrap/css/bootstrap-responsive.min.css
 /usr/share/twitter-bootstrap/files/img/glyphicons-halflings-white.png usr/share/varnish-agent/html/bootstrap/img/glyphicons-halflings-white.png
 /usr/share/twitter-bootstrap/files/img/glyphicons-halflings.png usr/share/varnish-agent/html/bootstrap/img/glyphicons-halflings.png
+/usr/share/javascript/jquery/jquery.js usr/share/varnish-agent/html/jquery.js

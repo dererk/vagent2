@@ -19,7 +19,7 @@ DESC="Varnish Agent"
 NAME=varnish-agent
 DAEMON=/usr/bin/$NAME
 PIDFILE=/var/run/$NAME.pid
-DAEMON_ARGS="-P $PIDFILE"
+DAEMON_ARGS="-q -P $PIDFILE"
 SCRIPTNAME=/etc/init.d/$NAME
 
 # Exit if the package is not installed

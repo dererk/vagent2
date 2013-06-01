@@ -2,4 +2,4 @@ varnish-agent (2.2~git20130222-1) unstable; urgency=low
 
   * Initial Upload (Closes: #698814).
 
- -- Ulises Vitulli <dererk@debian.org>  Sun, 19 May 2013 13:13:11 -0300
+ -- Ulises Vitulli <dererk@debian.org>  Sat, 01 Jun 2013 09:51:34 -0300

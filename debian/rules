@@ -34,6 +34,8 @@ override_dh_link:
 	rm debian/varnish-agent/usr/share/varnish-agent/html/bootstrap/css/bootstrap-responsive.min.css
 	rm debian/varnish-agent/usr/share/varnish-agent/html/bootstrap/img/glyphicons-halflings-white.png
 	rm debian/varnish-agent/usr/share/varnish-agent/html/bootstrap/img/glyphicons-halflings.png
+	# jQuery, provided by libjs-jquery on runtime-dep
+	rm debian/varnish-agent/usr/share/varnish-agent/html/jquery.js
 	dh_link
 
 override_dh_pysupport:

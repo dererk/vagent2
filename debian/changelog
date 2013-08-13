@@ -1,4 +1,4 @@
-varnish-agent (2.2~git20130222-1) unstable; urgency=low
+varnish-agent (2.2~git20130708-1) unstable; urgency=low
 
   * Initial Upload (Closes: #698814).
 

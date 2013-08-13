@@ -40,6 +40,7 @@
 #include <string.h>
 #include <time.h>
 #include <errno.h>
+#include <ctype.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -81,78 +82,66 @@ static void mk_help(struct agent_core_t *core, struct vcl_priv_t *vcl)
 }
 
 /*
- * Store VCL to disk if possible. Returns bytes written.
+ * Store VCL to disk if possible. Returns 0 if all went well, -1 on error.
  *
- * XXX: The moving-into-place is a best effort thing.
  */
 static int vcl_persist(int logfd, const char *id, const char *vcl, struct agent_core_t *core) {
-	int fd, ret;
-	char *path, *path2;
-	struct stat sbuf;
-	fd = asprintf(&path, "%s/.tmp.%s.auto.vcl", core->config->p_arg, id);
-	assert(fd>0);
-	fd = open(path, O_CREAT | O_WRONLY | O_TRUNC, S_IRWXU);
+	int ret;
+	_cleanup_free_ char *tmpfile = NULL;
+	_cleanup_free_ char *target = NULL;
+	_cleanup_close_ int fd = -1;
+
+	ret = asprintf(&target, "%s/%s.auto.vcl", core->config->p_arg, id);
+	assert(ret > 0);
+
+	ret = asprintf(&tmpfile, "%s/.tmp.%s.auto.vcl", core->config->p_arg, id);
+	assert(ret > 0);
+
+	ret = unlink(tmpfile);
+	if (ret < 0 && errno != ENOENT) {
+		warnlog(logfd, "Removing temporary file '%s' failed: %s", tmpfile, strerror(errno));
+		return -1;
+	}
+
+	fd = open(tmpfile, O_CREAT | O_WRONLY | O_TRUNC | O_EXCL, S_IRWXU);
 	if (fd < 0) {
-		warnlog(logfd, "Failed to open %s for writing: %s", path, strerror(errno));
-		free(path);
+		warnlog(logfd, "Failed to open %s for writing: %s", tmpfile, strerror(errno));
 		return -1;
 	}
-	ret = stat(path, &sbuf);
-	if (ret < 0) {
-		warnlog(logfd, "stat(\"%s\", &sbuf) returned %d. Errno: %d", path, ret, errno);
-		free(path);
-		close(fd);
-		return -1;
-	}
-	if (!(S_ISREG(sbuf.st_mode))) {
-		warnlog(logfd, "\"%s\" is not a regular file.", path);
-		free(path);
-		close(fd);
-		return -1;
-	}
+
 	ret = write(fd, (const void *)vcl, strlen(vcl));
-	assert(ret>0);
-	ret = 0;
-	fsync(fd);
-	close(fd);
-	fd = asprintf(&path2, "%s/%s.auto.vcl", core->config->p_arg, id);
-	assert(fd>0);
-	ret = unlink(path2);
-	if (ret && errno != ENOENT) {
-		warnlog(logfd, "unlink of %s failed, leaving temp file %s in place. Dunno quite what to do. errno: %d(%s)", path2, path, errno, strerror(errno));
-		free(path);
-		free(path2);
-		return -1;
-	}
-	ret = rename(path, path2);
+	assert(ret > 0);
+	ret = fsync(fd);
+	assert(ret >= 0);
+	ret = close(fd);
+	assert(ret >= 0);
+	fd = -1;
+	ret = rename(tmpfile, target);
 	if (ret) {
-		warnlog(logfd, "rename of %s to %s failed. Dunno quite what to do. errno: %d(%s)", path, path2, errno, strerror(errno));
-		free(path);
-		free(path2);
+		warnlog(logfd, "rename of %s to %s failed. Dunno quite what to do. errno: %d(%s)", tmpfile, target, errno, strerror(errno));
 		return -1;
 	}
-	free(path);
-	free(path2);
 	return 0;
 }
 
 /*
- * XXX: This logic does not cover what happens if we freeze/crash/burn/etc
- * between unlink() and link()...
+ * Set the link for the active VCL.
  */
 static int vcl_persist_active(int logfd, const char *id, struct agent_core_t *core)
 {
 	int ret;
 	char buf[1024];
 	char active[1024];
+	char active_tmp[1024];
 	struct stat sbuf;
 	/*
 	 * FIXME: need to move things into place to avoid disaster if we
 	 * crash during update, leaving no active vcl in place.
 	 */
-	sprintf(buf, "%s/%s.auto.vcl", core->config->p_arg, id);
-	sprintf(active, "%s/boot.vcl", core->config->p_arg);
-	
+	snprintf(buf, sizeof buf, "%s/%s.auto.vcl", core->config->p_arg, id);
+	snprintf(active_tmp, sizeof active_tmp, "%s/boot.vcl.tmp", core->config->p_arg);
+	snprintf(active, sizeof active, "%s/boot.vcl", core->config->p_arg);
+
 	ret = stat(buf, &sbuf);
 	if (ret < 0) {
 		warnlog(logfd, "Failed to stat() %s: %s", active, strerror(errno));
@@ -162,18 +151,38 @@ static int vcl_persist_active(int logfd, const char *id, struct agent_core_t *co
 		warnlog(logfd, "%s is not a regular file?", active);
 		return -1;
 	}
-	ret = unlink(active);
+
+	ret = unlink(active_tmp);
 	if (ret && errno != ENOENT) {
-		warnlog(logfd, "Failed to unlink %s: %s", active, strerror(errno));
+		warnlog(logfd, "Failed to unlink %s: %s", active_tmp, strerror(errno));
 		return -1;
 	}
 
-	ret = link(buf, active);
-	if (ret!=0) {
-		warnlog(logfd, "Failed to link %s->%s: %s", buf, active, strerror(errno));
+	ret = link(buf, active_tmp);
+	if (ret != 0) {
+		warnlog(logfd, "Failed to link %s->%s: %s", buf, active_tmp, strerror(errno));
 		return -1;
 	}
+
+	ret = rename(active_tmp, active);
+	if (ret) {
+		warnlog(logfd, "rename of %s to %s failed. Dunno quite what to do. errno: %d(%s)", active_tmp, active, errno, strerror(errno));
+		return -1;
+	}
+
 	return 0;
+}
+
+/* Check if something is a valid C identifier. */
+
+static int valid_c_ident(const char *ident)
+{
+	while (*ident != '\0') {
+		if (!isalnum(*ident) && *ident != '_')
+			return 0;
+		ident++;
+	}
+	return 1;
 }
 
 static int vcl_store(struct http_request *request,
@@ -193,9 +202,12 @@ static int vcl_store(struct http_request *request,
 	assert(request->ndata > 0);
 	assert(id);
 	assert(strlen(id)>0);
-	assert(index(id,'\n') == NULL);
-	assert(index(id,'\r') == NULL);
-	assert(index(id,' ') == NULL);
+
+	if (! valid_c_ident(id)) {
+		vret->status = 400;
+		vret->answer = strdup("VCL name is not valid");
+		return 500;
+	}
 	const char *end = (((char*)request->data)[request->ndata-1] == '\n') ? "" : "\n";
 
 	ipc_run(vcl->vadmin, vret, "vcl.inline %s << __EOF_%s__\n%s%s__EOF_%s__",
@@ -305,7 +317,7 @@ static unsigned int vcl_reply(struct http_request *request, void *data)
 				assert(VSB_finish(json) == 0);
 				struct http_response *resp = http_mkresp(request->connection, 200, NULL);
 				resp->data = VSB_data(json);
-				resp->ndata = VSB_len(json); 
+				resp->ndata = VSB_len(json);
 				http_add_header(resp, "Content-Type", "application/json");
 				send_response2(resp);
 				http_free_resp(resp);
@@ -332,7 +344,7 @@ static unsigned int vcl_reply(struct http_request *request, void *data)
 		if (!strncmp(request->url,"/vcl/",strlen("/vcl/"))) {
 			if (strlen(request->url) >= 6) {
 				status = vcl_store(request, vcl, &vret, core,
-					           request->url + strlen("/vcl/"));
+				                   request->url + strlen("/vcl/"));
 				struct http_response *resp = http_mkresp(request->connection, status, vret.answer);
 				send_response2(resp);
 				http_free_resp(resp);
@@ -383,7 +395,7 @@ void vcl_init(struct agent_core_t *core)
 	struct agent_plugin_t *plug;
 	struct vcl_priv_t *priv = malloc(sizeof(struct vcl_priv_t));
 	plug = plugin_find(core,"vcl");
-	
+
 	priv->logger = ipc_register(core,"logger");
 	priv->vadmin = ipc_register(core,"vadmin");
 	plug->data = (void *)priv;

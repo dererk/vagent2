@@ -65,7 +65,7 @@ cli_write(int sock, const char *s)
 	int i, l;
 
 	i = strlen(s);
-	l = write (sock, s, i);
+	l = write(sock, s, i);
 	if (i == l)
 		return 1;
 	perror("Write error CLI socket");
@@ -99,7 +99,7 @@ n_arg_sock(struct agent_core_t *core)
 		if (core->config->T_arg)
 			free(core->config->T_arg);
 		core->config->T_arg = strdup(core->config->T_arg_orig);
-	} else {		
+	} else {
 		if (vsd == NULL) {
 			warnlog(vadmin->logger,"No -T arg and no shmlog readable.");
 			return -1;
@@ -256,7 +256,7 @@ vadmin_init(struct agent_core_t *core)
 
 	v  = plugin_find(core, "vadmin");
 	v->ipc->cb = read_cmd;
-	vadmin = malloc(sizeof(struct vadmin_config_t ));
+	vadmin = malloc(sizeof(struct vadmin_config_t));
 	v->data = vadmin;
 	v->ipc->priv = core;
 	v->start = ipc_start;

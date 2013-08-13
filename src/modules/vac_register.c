@@ -75,10 +75,10 @@ static int send_curl(struct vac_register_priv_t *private, struct ipc_ret_t *vret
 		logger(private->logger, "Not registering with the VAC. Unknown vac url. Try using -z");
 		return -1;
 	}
-	logger( private->logger, "Registering with the vac: %s", private->vac_url);
+	logger(private->logger, "Registering with the vac: %s", private->vac_url);
 	generate_json(private);
 	ipc_run(private->curl, vret, "%s\n%s", private->vac_url ? private->vac_url : "", VSB_data(private->vsb_out));
-	return 0;	
+	return 0;
 }
 
 static unsigned int vac_register_reply(struct http_request *request, void *data)
@@ -86,23 +86,23 @@ static unsigned int vac_register_reply(struct http_request *request, void *data)
 	//reply callback for the vac_register module to the vac_register module
 	struct vac_register_priv_t *vdata = (struct vac_register_priv_t *)data;
 	struct ipc_ret_t vret;
-	int ret = send_curl( vdata, &vret);
+	int ret = send_curl(vdata, &vret);
 	struct http_response *resp;
 	if (ret != 0) {
 		send_response_fail(request->connection, "Couldn't register.");
 		return 0;
 	}
 	resp = http_mkresp(request->connection, vret.status, vret.answer);
-	logger( vdata->logger, "Curl response: status=%d answer=%s", vret.status, vret.answer); 
+	logger(vdata->logger, "Curl response: status=%d answer=%s", vret.status, vret.answer);
 	send_response2(resp);
 	http_free_resp(resp);
 	free(vret.answer);
-	return 0;	
+	return 0;
 }
 
 static void *vac_register(void *data)
 {
-	struct agent_core_t *core = (struct agent_core_t *)data;	
+	struct agent_core_t *core = (struct agent_core_t *)data;
 	struct vac_register_priv_t *private;
 	struct agent_plugin_t *plug;
 	struct ipc_ret_t vret;
@@ -110,9 +110,9 @@ static void *vac_register(void *data)
 	plug = plugin_find(core,"vac_register");
 	assert(plug);
 	private = plug->data;
-	ret = send_curl( private, &vret);
+	ret = send_curl(private, &vret);
 	if (ret == 0) {
-		debuglog( private->logger, "Response received from curl: status=%d answer=%s", vret.status, vret.answer);
+		debuglog(private->logger, "Response received from curl: status=%d answer=%s", vret.status, vret.answer);
 		free(vret.answer);
 	} else {
 		logger(private->logger, "Couldn't register with the VAC");
@@ -128,10 +128,10 @@ static pthread_t *vac_register_start(struct agent_core_t *core, const char *name
 	return thread;
 }
 
-void vac_register_init( struct agent_core_t *core) {
-	struct vac_register_priv_t *private  =  malloc( sizeof(struct vac_register_priv_t) ) ;
+void vac_register_init(struct agent_core_t *core) {
+	struct vac_register_priv_t *private  =  malloc(sizeof(struct vac_register_priv_t)) ;
 	struct agent_plugin_t *plug;
-	plug = plugin_find( core, "vac_register");
+	plug = plugin_find(core, "vac_register");
 	assert(plug);
 
 	//initialise the private data structure
@@ -142,16 +142,16 @@ void vac_register_init( struct agent_core_t *core) {
 	/**
 	 * XXX: construct the URL based on varnish name, cli setup and vagent's own api location.
          *	pending vac api changes.
-	 *	
-	 *	T_arg or T_arg_orig resides in core-config->T_arg for example. name is n_arg 
+	 *
+	 *	T_arg or T_arg_orig resides in core-config->T_arg for example. name is n_arg
          */
 	private->vac_url = core->config->vac_arg;
 	//chuck the private ds to the plugin so it lives on
 	plug->data = (void *) private;
 
 	//no need to kick it off just yet
-	plug->start = vac_register_start; 
-	
+	plug->start = vac_register_start;
+
 	//httpd register
 	http_register_url(core, "/vac_register", M_POST, vac_register_reply, private);
 }
